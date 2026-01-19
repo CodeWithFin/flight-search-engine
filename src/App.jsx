@@ -1,20 +1,26 @@
 import React, { useState } from 'react'
 import SearchForm from './components/SearchForm'
 import { Plane } from 'lucide-react'
+import { amadeusService } from './services/amadeus'
 
 function App() {
   const [searchResults, setSearchResults] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleSearch = async (searchData) => {
     setIsLoading(true)
-    console.log('Search data:', searchData)
+    setError(null)
     
-    // Placeholder for API call
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const flights = await amadeusService.searchFlights(searchData)
+      setSearchResults(flights)
+    } catch (err) {
+      setError(err.message || 'Failed to search flights. Please try again.')
       setSearchResults([])
-    }, 1500)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -57,6 +63,14 @@ function App() {
           <SearchForm onSearch={handleSearch} />
         </div>
 
+        {/* Error State */}
+        {error && (
+          <div className="mt-12 bg-red-50 border border-red-200 rounded-2xl p-6 mx-4 sm:mx-6">
+            <p className="text-red-800 font-medium">{error}</p>
+            <p className="text-red-600 text-sm mt-2">Please check your search criteria and try again.</p>
+          </div>
+        )}
+
         {/* Loading State */}
         {isLoading && (
           <div className="mt-12 text-center">
@@ -68,11 +82,40 @@ function App() {
         )}
 
         {/* Results Placeholder */}
-        {searchResults && searchResults.length === 0 && !isLoading && (
-          <div className="mt-12 text-center bg-white rounded-3xl p-12 shadow-lg">
+        {searchResults && searchResults.length === 0 && !isLoading && !error && (
+          <div className="mt-12 text-center bg-white rounded-3xl p-12 shadow-lg mx-4 sm:mx-6">
             <p className="text-stone-500 text-lg">
-              Ready to search for flights. Enter your travel details above.
+              No flights found. Try adjusting your search criteria.
             </p>
+          </div>
+        )}
+
+        {/* Results Preview */}
+        {searchResults && searchResults.length > 0 && !isLoading && (
+          <div className="mt-12 bg-white rounded-3xl p-8 shadow-lg mx-4 sm:mx-6">
+            <h2 className="text-2xl font-semibold text-stone-900 mb-4">
+              Found {searchResults.length} flights
+            </h2>
+            <div className="space-y-4">
+              {searchResults.slice(0, 3).map(flight => (
+                <div key={flight.id} className="p-4 border border-stone-200 rounded-xl">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-stone-900">{flight.airline.name}</p>
+                      <p className="text-sm text-stone-600">
+                        {flight.departure.airport} → {flight.arrival.airport}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-stone-900">
+                        ${flight.price.amount}
+                      </p>
+                      <p className="text-sm text-stone-600">{flight.durationFormatted}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
