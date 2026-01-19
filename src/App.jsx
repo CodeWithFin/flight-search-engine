@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import SearchForm from './components/SearchForm'
 import FlightList from './components/FlightList'
 import FilterPanel from './components/FilterPanel'
+import PriceGraph from './components/PriceGraph'
 import { Plane } from 'lucide-react'
 import { amadeusService } from './services/amadeus'
 import { useFilteredFlights, useSortedFlights } from './hooks/useFlightFilters'
@@ -87,6 +88,13 @@ function App() {
         {/* Flight Results with Filters */}
         {(searchResults !== null || isLoading) && (
           <div className="mt-12 px-4 sm:px-6">
+            {/* Price Graph */}
+            {searchResults && searchResults.length > 0 && !isLoading && (
+              <div className="mb-8">
+                <PriceGraph flights={filteredFlights} />
+              </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
               {/* Filter Sidebar */}
               {searchResults && searchResults.length > 0 && (
