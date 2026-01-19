@@ -1,13 +1,22 @@
 import React, { useState } from 'react'
 import SearchForm from './components/SearchForm'
 import FlightList from './components/FlightList'
+import FilterPanel from './components/FilterPanel'
 import { Plane } from 'lucide-react'
 import { amadeusService } from './services/amadeus'
+import { useFilteredFlights, useSortedFlights } from './hooks/useFlightFilters'
 
 function App() {
   const [searchResults, setSearchResults] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [filters, setFilters] = useState({
+    priceRange: [0, 10000],
+    stops: [],
+    airlines: [],
+    maxDuration: 1440,
+  })
+  const [sortBy, setSortBy] = useState('price-asc')
 
   const handleSearch = async (searchData) => {
     setIsLoading(true)
@@ -23,6 +32,9 @@ function App() {
       setIsLoading(false)
     }
   }
+
+  const filteredFlights = useFilteredFlights(searchResults, filters)
+  const sortedFlights = useSortedFlights(filteredFlights, sortBy)
 
   return (
     <div className="min-h-screen bg-[#F2F2F2] pb-12">
@@ -72,10 +84,41 @@ function App() {
           </div>
         )}
 
-        {/* Flight Results */}
+        {/* Flight Results with Filters */}
         {(searchResults !== null || isLoading) && (
           <div className="mt-12 px-4 sm:px-6">
-            <FlightList flights={searchResults} isLoading={isLoading} />
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+              {/* Filter Sidebar */}
+              {searchResults && searchResults.length > 0 && (
+                <FilterPanel flights={searchResults} onFilterChange={setFilters} />
+              )}
+
+              {/* Flight List */}
+              <div className="lg:col-start-2">
+                {/* Sort Options */}
+                {sortedFlights && sortedFlights.length > 0 && (
+                  <div className="mb-4 flex justify-between items-center">
+                    <p className="text-stone-600">
+                      Showing <span className="font-semibold text-stone-900">{sortedFlights.length}</span> of {searchResults?.length || 0} flights
+                    </p>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="bg-white border border-stone-200 rounded-xl px-4 py-2 text-sm text-stone-700 focus:ring-2 focus:ring-stone-900 focus:outline-none"
+                    >
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                      <option value="duration-asc">Duration: Shortest</option>
+                      <option value="duration-desc">Duration: Longest</option>
+                      <option value="departure-asc">Departure: Earliest</option>
+                      <option value="departure-desc">Departure: Latest</option>
+                    </select>
+                  </div>
+                )}
+                
+                <FlightList flights={sortedFlights} isLoading={isLoading} />
+              </div>
+            </div>
           </div>
         )}
       </div>
