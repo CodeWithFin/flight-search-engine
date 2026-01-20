@@ -43,6 +43,16 @@ function App() {
       <div className="sm:p-4 lg:p-6 max-w-[1600px] mx-auto pt-2 px-2">
         {/* Hero Header */}
         <header className="min-h-[500px] bg-stone-900 rounded-[2rem] relative shadow-2xl overflow-hidden animate-fade-in">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img 
+              src="/assets/images/flight-hero.jpg" 
+              alt="Flight Hero" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70"></div>
+          </div>
+          
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>

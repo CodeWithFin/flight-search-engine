@@ -236,9 +236,10 @@ If expanding the project, consider:
 
 ## 📄 Documentation
 
-- [README.md](README.md) - Setup and features
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment guide
-- [.env.example](.env.example) - Environment variables template
+- [README.md](../README.md) - Setup and features
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment guide
+- [PRD.md](./prd.md) - Product Requirements Document
+- [.env.example](../.env.example) - Environment variables template
 
 ## 👨‍💻 Developer Experience
 

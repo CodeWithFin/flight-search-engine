@@ -79,9 +79,21 @@ flight-search-engine/
 │   ├── constants/         # Configuration
 │   ├── App.jsx            # Main app component
 │   └── main.jsx           # Entry point
+├── documents/             # Documentation files
+│   ├── DEPLOYMENT.md      # Deployment guide
+│   ├── PROJECT_SUMMARY.md # Project overview
+│   └── prd.md             # Product Requirements Document
 ├── public/                # Static assets
 └── index.html
 ```
+
+## Documentation
+
+For detailed documentation, see the [`documents/`](./documents/) folder:
+
+- **[DEPLOYMENT.md](./documents/DEPLOYMENT.md)** - Deployment guide and instructions
+- **[PROJECT_SUMMARY.md](./documents/PROJECT_SUMMARY.md)** - Comprehensive project overview
+- **[prd.md](./documents/prd.md)** - Product Requirements Document
 
 ## License
 

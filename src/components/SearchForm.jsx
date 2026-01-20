@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Search, Calendar, Users, MapPin } from 'lucide-react'
+import { Search, Calendar, Users } from 'lucide-react'
+import LocationInput from './LocationInput'
 
 export default function SearchForm({ onSearch }) {
   const [formData, setFormData] = useState({
@@ -11,6 +12,10 @@ export default function SearchForm({ onSearch }) {
     cabinClass: 'ECONOMY',
     tripType: 'round-trip'
   })
+
+  // Store selected location objects with airport codes
+  const [originLocation, setOriginLocation] = useState(null)
+  const [destinationLocation, setDestinationLocation] = useState(null)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -26,7 +31,41 @@ export default function SearchForm({ onSearch }) {
       return
     }
 
-    onSearch(formData)
+    // Extract airport codes from selected locations, or use direct input if it's a 3-letter code
+    let originCode = ''
+    let destinationCode = ''
+
+    if (originLocation) {
+      originCode = originLocation.airportCode || originLocation.code
+    } else {
+      // Fallback: if input is exactly 3 uppercase letters, treat as airport code
+      const originUpper = formData.origin.trim().toUpperCase()
+      if (originUpper.length === 3 && /^[A-Z]{3}$/.test(originUpper)) {
+        originCode = originUpper
+      }
+    }
+
+    if (destinationLocation) {
+      destinationCode = destinationLocation.airportCode || destinationLocation.code
+    } else {
+      // Fallback: if input is exactly 3 uppercase letters, treat as airport code
+      const destUpper = formData.destination.trim().toUpperCase()
+      if (destUpper.length === 3 && /^[A-Z]{3}$/.test(destUpper)) {
+        destinationCode = destUpper
+      }
+    }
+
+    if (!originCode || !destinationCode) {
+      alert('Please select valid origin and destination locations from the suggestions, or enter valid 3-letter airport codes')
+      return
+    }
+
+    // Submit with airport codes
+    onSearch({
+      ...formData,
+      origin: originCode,
+      destination: destinationCode,
+    })
   }
 
   const handleInputChange = (field, value) => {
@@ -64,39 +103,39 @@ export default function SearchForm({ onSearch }) {
 
         {/* Origin and Destination */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
-              From
-            </label>
-            <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-              <input
-                type="text"
-                value={formData.origin}
-                onChange={(e) => handleInputChange('origin', e.target.value.toUpperCase())}
-                placeholder="JFK - New York"
-                className="w-full bg-stone-50 border-0 rounded-xl pl-12 pr-4 py-3 text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-stone-900 focus:outline-none transition-shadow"
-                maxLength={3}
-              />
-            </div>
-          </div>
+          <LocationInput
+            label="From"
+            value={formData.origin}
+            onChange={(value) => {
+              handleInputChange('origin', value)
+              // Clear location if user manually types something different
+              if (!value || (originLocation && originLocation.name !== value)) {
+                setOriginLocation(null)
+              }
+            }}
+            onLocationSelect={(location) => {
+              setOriginLocation(location)
+              handleInputChange('origin', location.name)
+            }}
+            placeholder="New York or JFK"
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
-              To
-            </label>
-            <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-              <input
-                type="text"
-                value={formData.destination}
-                onChange={(e) => handleInputChange('destination', e.target.value.toUpperCase())}
-                placeholder="LAX - Los Angeles"
-                className="w-full bg-stone-50 border-0 rounded-xl pl-12 pr-4 py-3 text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-stone-900 focus:outline-none transition-shadow"
-                maxLength={3}
-              />
-            </div>
-          </div>
+          <LocationInput
+            label="To"
+            value={formData.destination}
+            onChange={(value) => {
+              handleInputChange('destination', value)
+              // Clear location if user manually types something different
+              if (!value || (destinationLocation && destinationLocation.name !== value)) {
+                setDestinationLocation(null)
+              }
+            }}
+            onLocationSelect={(location) => {
+              setDestinationLocation(location)
+              handleInputChange('destination', location.name)
+            }}
+            placeholder="Los Angeles or LAX"
+          />
         </div>
 
         {/* Dates */}

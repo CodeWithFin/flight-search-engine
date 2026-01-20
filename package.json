@@ -1,6 +1,7 @@
 {
   "name": "flight-search-engine",
   "version": "1.0.0",
+  "type": "module",
   "description": "A modern flight search engine with real-time pricing and powerful filtering",
   "scripts": {
     "dev": "vite",

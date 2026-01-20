@@ -194,6 +194,88 @@ class AmadeusService {
     const mins = minutes % 60
     return `${hours}h ${mins}m`
   }
+
+  async searchLocations(query) {
+    try {
+      const token = await this.getAccessToken()
+
+      // Search for airports and cities
+      const params = new URLSearchParams({
+        subType: 'AIRPORT,CITY',
+        keyword: query,
+        'page[limit]': '10',
+      })
+
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/v1/reference-data/locations?${params}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        console.error('Location search failed:', response.status)
+        return []
+      }
+
+      const data = await response.json()
+      return this.transformLocationData(data)
+    } catch (error) {
+      console.error('Location search error:', error)
+      return []
+    }
+  }
+
+  transformLocationData(apiResponse) {
+    if (!apiResponse.data || apiResponse.data.length === 0) {
+      return []
+    }
+
+    const transformed = apiResponse.data.map(location => {
+      const cityName = location.address?.cityName || ''
+      const iataCode = location.iataCode || '' // This can be airport code or city code
+      const locationName = location.name || ''
+      const countryCode = location.address?.countryCode || ''
+      
+      // Format display name
+      let displayName = ''
+      if (location.subType === 'CITY') {
+        // For cities, show city name and code if available
+        displayName = cityName || locationName
+        if (iataCode && iataCode !== cityName) {
+          displayName += ` (${iataCode})`
+        }
+        if (countryCode) displayName += `, ${countryCode}`
+      } else {
+        // For airports, show code and name
+        displayName = iataCode ? `${iataCode} - ${locationName}` : locationName
+        if (cityName && cityName !== locationName) {
+          displayName += `, ${cityName}`
+        }
+      }
+
+      return {
+        id: location.id,
+        type: location.subType, // 'AIRPORT' or 'CITY'
+        code: iataCode || location.id,
+        name: displayName,
+        cityName: cityName,
+        airportName: locationName,
+        countryCode: countryCode,
+        // Use iataCode for both airports and cities (cities have city codes like NYC, PAR)
+        airportCode: iataCode || (location.subType === 'CITY' ? null : location.id),
+      }
+    })
+
+    // Sort: airports first, then cities
+    return transformed.sort((a, b) => {
+      if (a.type === 'AIRPORT' && b.type === 'CITY') return -1
+      if (a.type === 'CITY' && b.type === 'AIRPORT') return 1
+      return 0
+    })
+  }
 }
 
 export const amadeusService = new AmadeusService()
